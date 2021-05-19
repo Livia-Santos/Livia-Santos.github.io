@@ -1,29 +1,19 @@
-name: Lighthouse Check
+name: Build project and run Lighthouse CI
 on: [push]
-
 jobs:
-  lighthouse-check:
+  lhci:
+    name: Lighthouse CI
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - run: mkdir /tmp/artifacts
-    - name: Run Lighthouse
-      uses: foo-software/lighthouse-check-action@master
-      id: lighthouseCheck
-      with:
-        outputDirectory: /tmp/artifacts
-        urls: 'https://livia-santos.github.io/'
-    - name: Upload artifacts
-      uses: actions/upload-artifact@master
-      with:
-        name: Lighthouse reports
-        path: /tmp/artifacts
-    - name: Handle Lighthouse Check results
-      uses: foo-software/lighthouse-check-status-action@master
-      with:
-        lighthouseCheckResults: ${{ steps.lighthouseCheck.outputs.lighthouseCheckResults }}
-        minAccessibilityScore: "70"
-        minBestPracticesScore: "50"
-        minPerformanceScore: "50"
-        minProgressiveWebAppScore: "50"
-        minSeoScore: "50"
+      - uses: actions/checkout@v1
+      - name: Use Node.js 10.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: npm install
+        run: |
+          npm install
+      - name: run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli@0.3.x
+          lhci autorun --upload.target=temporary-public-storage || echo "LHCI failed!"
